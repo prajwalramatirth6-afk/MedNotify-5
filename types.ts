@@ -41,4 +41,5 @@ export interface Prescription {
   doctorName: string;
   date: string;
   image: string; // base64 encoded string
+  notes?: string;
 }

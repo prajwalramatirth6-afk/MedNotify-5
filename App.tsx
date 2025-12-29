@@ -33,6 +33,7 @@ const App: React.FC = () => {
   const [rxTitle, setRxTitle] = useState("");
   const [rxDoctor, setRxDoctor] = useState("");
   const [rxDate, setRxDate] = useState(new Date().toISOString().split('T')[0]);
+  const [rxNote, setRxNote] = useState("");
   const [rxImage, setRxImage] = useState<string | null>(null);
   const rxFileInputRef = useRef<HTMLInputElement>(null);
   const [viewingRx, setViewingRx] = useState<Prescription | null>(null);
@@ -342,13 +343,16 @@ const App: React.FC = () => {
       title: rxTitle,
       doctorName: rxDoctor,
       date: rxDate,
+      notes: rxNote,
       image: rxImage
     };
     setPrescriptions(prev => [newRx, ...prev]);
     setIsRxFormOpen(false);
     setRxTitle("");
     setRxDoctor("");
+    setRxNote("");
     setRxImage(null);
+    setRxDate(new Date().toISOString().split('T')[0]);
   };
 
   const handleSaveName = (e: React.FormEvent) => {
@@ -506,14 +510,6 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1">
-             {/* Nearby pharmacy removed from home as requested */}
-             <button onClick={() => setIsRxFormOpen(true)} className="shrink-0 flex items-center space-x-2 bg-white px-4 py-3 rounded-2xl border border-slate-100 shadow-sm active:scale-95 transition-all">
-               <span className="text-lg">📂</span>
-               <span className="text-xs font-black text-slate-700 uppercase tracking-tight">Upload Prescription</span>
-             </button>
-          </div>
-
           {medicationsNeedingRefill.length > 0 && (
             <div className="bg-amber-50 border border-amber-200 rounded-3xl p-5 animate-in slide-in-from-top-2">
               <div className="flex items-center space-x-2 mb-3">
@@ -631,7 +627,10 @@ const App: React.FC = () => {
             {prescriptions.map(rx => (
               <div key={rx.id} onClick={() => setViewingRx(rx)} className="bg-white rounded-3xl overflow-hidden shadow-sm border border-slate-100 active:scale-95 transition-all cursor-pointer">
                 <img src={rx.image} alt={rx.title} className="w-full h-32 object-cover" />
-                <div className="p-3"><h5 className="font-bold text-slate-800 text-sm truncate">{rx.title}</h5></div>
+                <div className="p-3">
+                  <h5 className="font-bold text-slate-800 text-sm truncate">{rx.title}</h5>
+                  {rx.doctorName && <p className="text-[9px] font-bold text-blue-500 truncate">Dr. {rx.doctorName}</p>}
+                </div>
               </div>
             ))}
           </div>
@@ -754,7 +753,7 @@ const App: React.FC = () => {
 
       {isRxFormOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-end sm:items-center justify-center p-4">
-          <div className="bg-white w-full max-w-sm rounded-[32px] p-8 shadow-2xl animate-in slide-in-from-bottom-8 duration-300">
+          <div className="bg-white w-full max-w-sm rounded-[32px] p-8 shadow-2xl animate-in slide-in-from-bottom-8 duration-300 max-h-[95vh] overflow-y-auto no-scrollbar">
              <div className="flex justify-between items-center mb-6">
                 <h3 className="text-2xl font-black text-slate-800">New Rx Photo</h3>
                 <button onClick={() => setIsRxFormOpen(false)} className="text-slate-400 p-2">✕</button>
@@ -764,10 +763,61 @@ const App: React.FC = () => {
                    {rxImage ? <img src={rxImage} alt="Rx" className="w-full h-full object-cover" /> : <span className="text-4xl">📸</span>}
                    <input type="file" accept="image/*" ref={rxFileInputRef} className="hidden" onChange={handleRxPhotoUpload} />
                 </div>
-                <input required type="text" placeholder="Title (e.g. Cardiologist)" className="w-full p-4 bg-slate-50 border-none rounded-2xl" value={rxTitle} onChange={(e) => setRxTitle(e.target.value)} />
-                <button disabled={!rxImage} type="submit" className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-xl">Save</button>
+                
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Title</label>
+                    <input required type="text" placeholder="e.g. Cardiologist" className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm font-bold" value={rxTitle} onChange={(e) => setRxTitle(e.target.value)} />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Doctor Name</label>
+                    <input type="text" placeholder="Dr. Name" className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm font-bold" value={rxDoctor} onChange={(e) => setRxDoctor(e.target.value)} />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Prescription Date</label>
+                    <input type="date" className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm font-bold" value={rxDate} onChange={(e) => setRxDate(e.target.value)} />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Notes</label>
+                    <textarea placeholder="Any additional notes..." className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm font-bold min-h-[80px]" value={rxNote} onChange={(e) => setRxNote(e.target.value)} />
+                  </div>
+                </div>
+
+                <button disabled={!rxImage} type="submit" className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-xl mt-4 disabled:opacity-50">Save to Vault</button>
              </form>
           </div>
+        </div>
+      )}
+
+      {viewingRx && (
+        <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md z-[250] flex items-center justify-center p-4">
+           <div className="bg-white w-full max-w-md rounded-[40px] overflow-hidden flex flex-col max-h-[90vh]">
+              <div className="relative h-72">
+                 <img src={viewingRx.image} alt={viewingRx.title} className="w-full h-full object-contain bg-slate-900" />
+                 <button onClick={() => setViewingRx(null)} className="absolute top-4 right-4 bg-white/20 backdrop-blur-md text-white w-10 h-10 rounded-full flex items-center justify-center font-bold">✕</button>
+              </div>
+              <div className="p-8 space-y-4 overflow-y-auto no-scrollbar">
+                 <div>
+                    <h3 className="text-2xl font-black text-slate-800">{viewingRx.title}</h3>
+                    <p className="text-sm font-bold text-blue-600">Prescribed on {new Date(viewingRx.date).toLocaleDateString()}</p>
+                 </div>
+                 {viewingRx.doctorName && (
+                   <div className="bg-slate-50 p-4 rounded-3xl">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Doctor</p>
+                      <p className="font-bold text-slate-700">Dr. {viewingRx.doctorName}</p>
+                   </div>
+                 )}
+                 {viewingRx.notes && (
+                   <div className="bg-blue-50/50 p-4 rounded-3xl border border-blue-100">
+                      <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1">Notes</p>
+                      <p className="text-sm font-medium text-slate-600 italic">"{viewingRx.notes}"</p>
+                   </div>
+                 )}
+              </div>
+           </div>
         </div>
       )}
 
