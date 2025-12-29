@@ -1,0 +1,7 @@
+{
+  "name": "Copy of Copy of Copy of Copy of MedNotify 5- Smart Medicine Reminder",
+  "description": "A comprehensive medication management tool with smart reminders, dose tracking, and a nearby pharmacy finder powered by AI.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}

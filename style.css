@@ -1,0 +1,12 @@
+
+/* Base styles managed by Tailwind CDN in index.html */
+body {
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100vh;
+}
