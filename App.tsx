@@ -43,7 +43,7 @@ const App: React.FC = () => {
     vibrateEnabled: true,
     alarmStyle: 'urgent',
     snoozeDuration: 5,
-    missedWindow: 60 // Default 60 minutes
+    missedWindow: 60 
   });
 
   const [deletingMedId, setDeletingMedId] = useState<string | null>(null);
@@ -52,6 +52,7 @@ const App: React.FC = () => {
   const audioCtx = useRef<AudioContext | null>(null);
   const alarmInterval = useRef<number | null>(null);
 
+  // The Logo URL provided in the prompt image context
   const LOGO_URL = "https://raw.githubusercontent.com/hexonova/assets/main/mednotify-logo.png";
   const FALLBACK_LOGO = "https://cdn-icons-png.flaticon.com/512/883/883407.png";
 
@@ -419,7 +420,6 @@ const App: React.FC = () => {
     return 'safe';
   };
 
-  // Helper function to determine if a medication is expired
   const isExpired = (dateStr?: string) => getExpiryState(dateStr) === 'expired';
 
   const getLogStatusToday = (medId: string) => logs.find(l => l.medicationId === medId && l.timestamp.startsWith(new Date().toISOString().split('T')[0]))?.status;
@@ -476,7 +476,8 @@ const App: React.FC = () => {
 
       <header className="sticky top-0 bg-white/80 backdrop-blur-md px-6 py-4 z-40 border-b border-slate-100 flex justify-between items-center">
         <div onClick={initAudio} className="cursor-pointer flex items-center space-x-3">
-          <img src={LOGO_URL} alt="Logo" className="w-10 h-10 rounded-xl shadow-sm border border-slate-100" onError={(e) => (e.currentTarget.src = FALLBACK_LOGO)} />
+          {/* Logo before Med-Notify title */}
+          <img src={LOGO_URL} alt="Med-Notify Logo" className="w-10 h-10 rounded-xl shadow-sm border border-slate-100" onError={(e) => (e.currentTarget.src = FALLBACK_LOGO)} />
           <div>
             <h1 className="text-xl font-black text-slate-800 tracking-tight leading-none">Med-Notify</h1>
             <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] mt-0.5">Powered by HEXONOVA</p>
@@ -506,6 +507,7 @@ const App: React.FC = () => {
           </div>
 
           <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1">
+             {/* Nearby pharmacy removed from home as requested */}
              <button onClick={() => setIsRxFormOpen(true)} className="shrink-0 flex items-center space-x-2 bg-white px-4 py-3 rounded-2xl border border-slate-100 shadow-sm active:scale-95 transition-all">
                <span className="text-lg">📂</span>
                <span className="text-xs font-black text-slate-700 uppercase tracking-tight">Upload Prescription</span>
@@ -522,7 +524,7 @@ const App: React.FC = () => {
                 {medicationsNeedingRefill.map(med => (
                   <div key={med.id} className="flex justify-between items-center bg-white/60 p-3 rounded-2xl border border-amber-100">
                     <span className="text-sm font-bold text-slate-700">{med.name}</span>
-                    <span className="text-[10px] font-black text-amber-600 uppercase bg-amber-100 px-2 py-1 rounded-lg">{med.remainingDoses} doses left</span>
+                    <span className="text-[10px] font-black text-amber-600 uppercase bg-amber-100 px-2 py-1 rounded-lg">⚠️ {med.remainingDoses} LEFT</span>
                   </div>
                 ))}
               </div>
@@ -546,11 +548,11 @@ const App: React.FC = () => {
                 const needsRefill = med.remainingDoses <= med.refillThreshold && med.remainingDoses > 0;
                 
                 return (
-                  <div key={med.id} onClick={() => { initAudio(); setEditingMed(med); }} className={`bg-white p-5 rounded-3xl shadow-sm border transition-all relative cursor-pointer active:scale-[0.98] ${status === 'taken' ? 'border-green-400 bg-green-50' : status === 'skipped' ? 'border-orange-400 bg-orange-50' : 'border-slate-100'}`}>
+                  <div key={med.id} onClick={() => { initAudio(); setEditingMed(med); }} className={`bg-white p-5 rounded-3xl shadow-sm border transition-all relative cursor-pointer active:scale-[0.98] ${status === 'taken' ? 'border-green-400 bg-green-50' : status === 'skipped' ? 'border-orange-400 bg-orange-50' : status === 'missed' ? 'border-red-400 bg-red-50' : 'border-slate-100'}`}>
                     <div className="flex justify-between items-start pr-24">
                       <div className="flex space-x-4">
-                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl ${status === 'taken' ? 'bg-green-100 text-green-600' : 'bg-blue-50 text-blue-600'}`}>
-                          {status === 'taken' ? '✓' : '💊'}
+                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl ${status === 'taken' ? 'bg-green-100 text-green-600' : status === 'missed' ? 'bg-red-100 text-red-600' : 'bg-blue-50 text-blue-600'}`}>
+                          {status === 'taken' ? '✓' : status === 'missed' ? '!' : '💊'}
                         </div>
                         <div>
                           <h4 className="font-bold text-slate-800">{med.name}</h4>
@@ -576,7 +578,7 @@ const App: React.FC = () => {
                           </>
                         )}
                         {status && (
-                           <div className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-tight ${status === 'taken' ? 'bg-green-600 text-white' : 'bg-orange-600 text-white'}`}>
+                           <div className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-tight ${status === 'taken' ? 'bg-green-600 text-white' : status === 'skipped' ? 'bg-orange-600 text-white' : 'bg-red-600 text-white'}`}>
                               {status}
                            </div>
                         )}
